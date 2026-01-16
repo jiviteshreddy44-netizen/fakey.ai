@@ -1,0 +1,128 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FAKEY.AI | Truth Verification Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              accent: '#00FF88', 
+              surface: '#121212',
+              surfaceLight: '#1A1A1A',
+              border: '#2A2A2A',
+              charcoal: '#050505',
+              neon: '#00FF88', 
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['Geist Mono', 'monospace'],
+            },
+            animation: {
+              'pulse-slow': 'pulse-slow 6s ease-in-out infinite',
+              'scan-sweep': 'scan-sweep 4s linear infinite',
+            },
+            keyframes: {
+              'scan-sweep': {
+                '0%': { top: '0%' },
+                '100%': { top: '100%' }
+              }
+            }
+          },
+        },
+      };
+    </script>
+    <style>
+      :root {
+        --charcoal: #050505;
+        --surface: #121212;
+        --surface-light: #1A1A1A;
+        --neon: #00FF88;
+        --border: #2A2A2A;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--charcoal);
+        color: #ffffff;
+        overflow-x: hidden;
+      }
+      
+      /* Pure Matte Surfaces - Strictly No Glassmorphism */
+      .bento-card, .glass, .glass-heavy, .glass-hud, 
+      [class*='backdrop-blur'], 
+      [class*='backdrop-filter'] {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+
+      /* Solid Matte Overrides for common translucent patterns */
+      .bg-white\/5, .bg-white\/10, .bg-white\/20, .bg-white\/30 { background-color: var(--surface-light) !important; }
+      .bg-black\/10, .bg-black\/20, .bg-black\/40, .bg-black\/60, .bg-black\/80 { background-color: var(--charcoal) !important; }
+
+      .bento-card, .glass, .glass-heavy, .glass-hud {
+        background-color: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+      }
+      
+      .bento-card:hover {
+        border-color: var(--neon) !important;
+        background-color: var(--surface-light) !important;
+      }
+
+      .bg-grid-forensic {
+        background-size: 80px 80px;
+        background-image: 
+          linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      }
+
+      @keyframes reveal-stagger {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-reveal {
+        animation: reveal-stagger 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        opacity: 0;
+      }
+
+      @keyframes scan-v {
+        0% { top: 0%; opacity: 0; }
+        50% { opacity: 1; }
+        100% { top: 100%; opacity: 0; }
+      }
+      .animate-scan-v {
+        animation: scan-v 4s linear infinite;
+      }
+      
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
+    "framer-motion": "https://esm.sh/framer-motion@^12.26.2",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

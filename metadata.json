@@ -1,0 +1,9 @@
+{
+  "name": "Copy of FAKEY.AI - Truth Verification Suite",
+  "description": "Advanced forensic analysis for deepfakes, AI-text, and real-time truth grounding.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
