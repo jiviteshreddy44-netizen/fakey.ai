@@ -35,7 +35,6 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
   const videoRef = useRef<HTMLVideoElement>(null);
   const isVideo = result.fileMetadata.type.includes('video');
 
-  // Sync video progress for the graph
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
@@ -61,7 +60,6 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
     
     if (explanation) {
       setActiveAnomaly(explanation);
-      // Auto-hide pointers after 4 seconds of inspection
       setTimeout(() => setActiveAnomaly(null), 4000);
     }
   };
@@ -227,11 +225,6 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
                     </AnimatePresence>
                    </div>
                 ))}
-                {result.explanations.length === 0 && (
-                   <div className="py-20 text-center text-white/10 uppercase font-black text-[12px] tracking-[0.5em] italic border border-dashed border-border rounded-3xl">
-                      No significant anomalies identified
-                   </div>
-                )}
               </div>
             </div>
           </div>
@@ -305,44 +298,14 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
                         <div className="absolute inset-0 flex items-end gap-[1px]">
                           {Array.from({length: 80}).map((_, i) => {
                             const baseHeight = (Math.sin(i * 0.5) + 1.2) * 20;
-                            const noise = Math.random() * 30;
-                            const height = result.deepfakeProbability > 50 ? baseHeight + noise : baseHeight;
-                            
-                            const barTimePercent = (i / 80) * 100;
-                            const matchingAnomalyIdx = result.explanations.findIndex(exp => {
-                              if (!exp.timestamp || !videoRef.current?.duration) return false;
-                              const [m, s] = exp.timestamp.split(':').map(Number);
-                              const anomalyTime = (m * 60 + s);
-                              const anomalyPercent = (anomalyTime / videoRef.current.duration) * 100;
-                              return Math.abs(anomalyPercent - barTimePercent) < 1.5;
-                            });
-
+                            const height = result.deepfakeProbability > 50 ? baseHeight + (Math.random() * 30) : baseHeight;
                             return (
-                              <button 
-                                key={i} 
-                                onClick={() => {
-                                  if (matchingAnomalyIdx !== -1) {
-                                    handleAnomalyClick(matchingAnomalyIdx, result.explanations[matchingAnomalyIdx]);
-                                  }
-                                }}
-                                className={`flex-grow transition-all duration-300 ${matchingAnomalyIdx !== -1 ? 'bg-red-500 shadow-[0_0_8px_red] cursor-pointer hover:scale-y-110' : 'bg-neon/30 pointer-events-none'}`}
-                                style={{ 
-                                  height: `${matchingAnomalyIdx !== -1 ? height + 20 : height}%`,
-                                  opacity: i / 80 < videoProgress / 100 ? 1 : 0.2
-                                }}
-                              ></button>
+                              <div key={i} className="flex-grow bg-neon/30" style={{ height: `${height}%`, opacity: i / 80 < videoProgress / 100 ? 1 : 0.2 }}></div>
                             );
                           })}
                         </div>
-                        
-                        <div 
-                          className="absolute top-0 bottom-0 w-[2px] bg-white z-10 shadow-neon"
-                          style={{ left: `${videoProgress}%` }}
-                        ></div>
+                        <div className="absolute top-0 bottom-0 w-[2px] bg-white z-10 shadow-neon" style={{ left: `${videoProgress}%` }}></div>
                       </div>
-                      <p className="text-[8px] font-mono text-white/20 text-center uppercase tracking-widest italic">
-                        Select red markers to inspect specific anomalies
-                      </p>
                    </div>
                  ) : (
                    <div className="space-y-6">
@@ -350,38 +313,21 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
                          <Target size={18} className="text-neon" />
                          <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Extraction Metadata</h4>
                       </div>
-                      <div className="grid grid-cols-1 gap-3">
-                        {result.explanations.slice(0, 3).map((exp, i) => (
-                           <button 
-                            key={i} 
-                            onClick={() => handleAnomalyClick(i, exp)}
-                            className={`flex items-center justify-between p-4 border rounded-2xl transition-all ${expandedAnomaly === i ? 'bg-neon/10 border-neon' : 'bg-charcoal border-border'}`}
-                           >
-                              <div className="space-y-1 text-left">
-                                <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">{exp.point}</span>
-                                <p className="text-[11px] text-white/40 italic truncate max-w-[200px]">{exp.detail}</p>
-                              </div>
-                              <ChevronDown size={14} className={`text-white/20 transition-transform ${expandedAnomaly === i ? 'rotate-180 text-neon' : ''}`} />
-                           </button>
-                        ))}
-                      </div>
+                      <div className="p-4 bg-charcoal border border-border rounded-xl flex items-center gap-4">
+                        <Fingerprint size={20} className="text-neon/40" />
+                        <div className="overflow-hidden">
+                           <span className="text-[8px] font-black text-white/20 uppercase block tracking-widest">Metadata Hash</span>
+                           <p className="text-[10px] font-mono text-white/40 truncate">{result.id}</p>
+                        </div>
+                     </div>
                    </div>
                  )}
-
-                 <div className="p-4 bg-charcoal border border-border rounded-xl flex items-center gap-4">
-                    <Fingerprint size={20} className="text-neon/40" />
-                    <div className="overflow-hidden">
-                       <span className="text-[8px] font-black text-white/20 uppercase block tracking-widest">Metadata Hash</span>
-                       <p className="text-[10px] font-mono text-white/40 truncate">{result.id} // SEC_NODE_{Math.floor(Math.random()*999)}</p>
-                    </div>
-                 </div>
               </div>
             </div>
           </div>
         </section>
-
+        
         <section className="bg-surface border border-border rounded-[2.5rem] p-10 flex flex-col md:flex-row gap-10 items-center shadow-2xl relative overflow-hidden">
-           <div className="absolute -top-10 -left-10 w-40 h-40 bg-neon/5 blur-[80px] rounded-full"></div>
            <div className="shrink-0 w-20 h-20 bg-charcoal border border-border rounded-2xl flex items-center justify-center text-white/20">
               <Activity size={40} />
            </div>
@@ -394,9 +340,6 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
            <div className="flex flex-col gap-3 shrink-0">
               <button onClick={() => handleExport('TXT')} className="px-8 py-4 bg-white text-black font-black rounded-xl text-xs uppercase tracking-widest hover:bg-neon transition-all flex items-center gap-2">
                 <Download size={16} /> Export Forensic Log
-              </button>
-              <button onClick={() => handleExport('JSON')} className="px-8 py-4 bg-surface border border-border text-white/40 font-black rounded-xl text-xs uppercase tracking-widest hover:text-white transition-all">
-                <Share2 size={16} className="inline mr-2" /> Share Result
               </button>
            </div>
         </section>
