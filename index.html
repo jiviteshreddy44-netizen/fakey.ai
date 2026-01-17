@@ -52,19 +52,15 @@
         background-color: var(--charcoal);
         color: #ffffff;
         overflow-x: hidden;
+        margin: 0;
       }
       
-      /* Pure Matte Surfaces - Strictly No Glassmorphism */
       .bento-card, .glass, .glass-heavy, .glass-hud, 
       [class*='backdrop-blur'], 
       [class*='backdrop-filter'] {
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
       }
-
-      /* Solid Matte Overrides for common translucent patterns */
-      .bg-white\/5, .bg-white\/10, .bg-white\/20, .bg-white\/30 { background-color: var(--surface-light) !important; }
-      .bg-black\/10, .bg-black\/20, .bg-black\/40, .bg-black\/60, .bg-black\/80 { background-color: var(--charcoal) !important; }
 
       .bento-card, .glass, .glass-heavy, .glass-hud {
         background-color: var(--surface) !important;
@@ -95,34 +91,26 @@
         opacity: 0;
       }
 
-      @keyframes scan-v {
-        0% { top: 0%; opacity: 0; }
-        50% { opacity: 1; }
-        100% { top: 100%; opacity: 0; }
-      }
-      .animate-scan-v {
-        animation: scan-v 4s linear infinite;
-      }
-      
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
-  <script type="importmap">
+    <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@^19.2.3",
-    "react-dom": "https://esm.sh/react-dom@^19.2.3",
-    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
-    "framer-motion": "https://esm.sh/framer-motion@^12.26.2",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "@google/genai": "https://esm.sh/@google/genai@^1.37.0",
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+    "framer-motion": "https://esm.sh/framer-motion@11.11.17",
+    "lucide-react": "https://esm.sh/lucide-react@0.454.0",
+    "@google/genai": "https://esm.sh/@google/genai@0.2.1",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
 </script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>

@@ -16,7 +16,8 @@ import {
   BarChart3,
   Target,
   ArrowDownRight,
-  AlertTriangle
+  AlertTriangle,
+  ChevronDown
 } from 'lucide-react';
 
 interface ResultsScreenProps {
@@ -30,6 +31,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [activeAnomaly, setActiveAnomaly] = useState<any | null>(null);
+  const [expandedAnomaly, setExpandedAnomaly] = useState<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const isVideo = result.fileMetadata.type.includes('video');
 
@@ -64,6 +66,14 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
     }
   };
 
+  const handleAnomalyClick = (idx: number, e: any) => {
+    const isExpanding = expandedAnomaly !== idx;
+    setExpandedAnomaly(isExpanding ? idx : null);
+    if (isExpanding) {
+      seekTo(e.timestamp, e);
+    }
+  };
+
   const handleExport = (type: string) => {
     if (type === 'PDF' || type === 'TXT') onOpenReport();
     else {
@@ -77,7 +87,6 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
     }
   };
 
-  // Helper to map category to screen coordinates (Simulated for UI)
   const getPointerPos = (category: string) => {
     switch(category) {
       case 'visual': return { top: '30%', left: '45%' };
@@ -162,27 +171,61 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
             <div className="bg-surface border border-border rounded-[2.5rem] p-10 shadow-xl flex flex-col flex-grow">
               <div className="flex items-center justify-between mb-8">
                 <h3 className="text-2xl font-black italic uppercase tracking-tight">Forensic Findings</h3>
-                <span className="text-[10px] font-mono text-neon/40">ANOMALY_LOG_{result.explanations.length}</span>
+                <span className="text-[10px] font-mono text-neon/40 uppercase">Anomaly_Extraction_Live</span>
               </div>
               
               <div className="space-y-4 overflow-y-auto pr-2 max-h-[600px] no-scrollbar">
                 {result.explanations.map((e, idx) => (
-                   <button 
+                   <div 
                     key={idx} 
-                    onClick={() => seekTo(e.timestamp, e)}
-                    className="w-full text-left flex items-start gap-5 p-6 border border-border rounded-2xl bg-charcoal/30 hover:bg-white/5 transition-all group"
+                    className={`border rounded-2xl transition-all duration-300 ${expandedAnomaly === idx ? 'border-neon/40 bg-neon/5' : 'border-border bg-charcoal/30'}`}
                    >
-                      <div className={`mt-1.5 shrink-0 w-2 h-2 rounded-full ${result.deepfakeProbability > 50 ? 'bg-red-500 shadow-red-500/50' : 'bg-neon shadow-neon'}`}></div>
-                      <div className="flex-grow">
-                        <div className="flex items-center justify-between mb-1">
-                          <h4 className="text-xs font-black uppercase text-white/80 tracking-widest group-hover:text-neon transition-colors">{e.point}</h4>
-                          {e.timestamp && (
-                             <span className="text-[10px] font-mono text-neon/60 bg-neon/5 px-2 py-0.5 rounded border border-neon/10">{e.timestamp}</span>
-                          )}
+                    <button 
+                      onClick={() => handleAnomalyClick(idx, e)}
+                      className="w-full text-left flex items-center justify-between p-6 group"
+                    >
+                      <div className="flex items-center gap-5">
+                        <div className={`w-2 h-2 rounded-full ${result.deepfakeProbability > 50 ? 'bg-red-500 shadow-red-500/50' : 'bg-neon shadow-neon'}`}></div>
+                        <div>
+                          <h4 className={`text-xs font-black uppercase tracking-widest transition-colors ${expandedAnomaly === idx ? 'text-neon' : 'text-white/80 group-hover:text-neon'}`}>
+                            {e.point}
+                          </h4>
+                          <span className="text-[9px] font-mono text-white/20 uppercase mt-1 block">Vector: {e.category}</span>
                         </div>
-                        <p className="text-sm text-white/40 italic leading-relaxed">{e.detail}</p>
                       </div>
-                   </button>
+                      <div className="flex items-center gap-4">
+                        {e.timestamp && (
+                           <span className="text-[10px] font-mono text-neon/60 bg-neon/5 px-2 py-0.5 rounded border border-neon/10">{e.timestamp}</span>
+                        )}
+                        <ChevronDown 
+                          size={16} 
+                          className={`text-white/20 transition-transform duration-300 ${expandedAnomaly === idx ? 'rotate-180 text-neon' : ''}`} 
+                        />
+                      </div>
+                    </button>
+                    
+                    <AnimatePresence>
+                      {expandedAnomaly === idx && (
+                        <motion.div 
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-12 pb-6">
+                            <div className="h-px bg-white/5 mb-4" />
+                            <p className="text-sm text-white/60 italic leading-relaxed">
+                              {e.detail}
+                            </p>
+                            <div className="mt-4 flex items-center gap-2">
+                              <Target size={12} className="text-neon/40" />
+                              <span className="text-[9px] font-black uppercase text-white/20 tracking-widest">Forensic Insight Verified</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                   </div>
                 ))}
                 {result.explanations.length === 0 && (
                    <div className="py-20 text-center text-white/10 uppercase font-black text-[12px] tracking-[0.5em] italic border border-dashed border-border rounded-3xl">
@@ -207,7 +250,6 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
                    <img src={result.fileMetadata.preview} className="w-full h-full object-contain" alt="Evidence" />
                  )}
                  
-                 {/* ANOMALY POINTERS OVERLAY */}
                  <AnimatePresence>
                    {activeAnomaly && (
                      <motion.div 
@@ -266,9 +308,8 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
                             const noise = Math.random() * 30;
                             const height = result.deepfakeProbability > 50 ? baseHeight + noise : baseHeight;
                             
-                            // Check if this bar corresponds to an anomaly's timestamp
                             const barTimePercent = (i / 80) * 100;
-                            const matchingAnomaly = result.explanations.find(exp => {
+                            const matchingAnomalyIdx = result.explanations.findIndex(exp => {
                               if (!exp.timestamp || !videoRef.current?.duration) return false;
                               const [m, s] = exp.timestamp.split(':').map(Number);
                               const anomalyTime = (m * 60 + s);
@@ -280,13 +321,13 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
                               <button 
                                 key={i} 
                                 onClick={() => {
-                                  if (matchingAnomaly) {
-                                    seekTo(matchingAnomaly.timestamp, matchingAnomaly);
+                                  if (matchingAnomalyIdx !== -1) {
+                                    handleAnomalyClick(matchingAnomalyIdx, result.explanations[matchingAnomalyIdx]);
                                   }
                                 }}
-                                className={`flex-grow transition-all duration-300 ${matchingAnomaly ? 'bg-red-500 shadow-[0_0_8px_red] cursor-pointer hover:scale-y-110' : 'bg-neon/30 pointer-events-none'}`}
+                                className={`flex-grow transition-all duration-300 ${matchingAnomalyIdx !== -1 ? 'bg-red-500 shadow-[0_0_8px_red] cursor-pointer hover:scale-y-110' : 'bg-neon/30 pointer-events-none'}`}
                                 style={{ 
-                                  height: `${matchingAnomaly ? height + 20 : height}%`,
+                                  height: `${matchingAnomalyIdx !== -1 ? height + 20 : height}%`,
                                   opacity: i / 80 < videoProgress / 100 ? 1 : 0.2
                                 }}
                               ></button>
@@ -300,26 +341,28 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
                         ></div>
                       </div>
                       <p className="text-[8px] font-mono text-white/20 text-center uppercase tracking-widest italic">
-                        Click red peaks to jump to detected anomalies
+                        Select red markers to inspect specific anomalies
                       </p>
                    </div>
                  ) : (
                    <div className="space-y-6">
                       <div className="flex items-center gap-3">
                          <Target size={18} className="text-neon" />
-                         <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Anomaly Point-of-Interest</h4>
+                         <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40">Extraction Metadata</h4>
                       </div>
                       <div className="grid grid-cols-1 gap-3">
                         {result.explanations.slice(0, 3).map((exp, i) => (
-                           <div key={i} className="flex items-center justify-between p-4 bg-charcoal border border-border rounded-2xl group hover:border-neon transition-colors">
-                              <div className="space-y-1">
+                           <button 
+                            key={i} 
+                            onClick={() => handleAnomalyClick(i, exp)}
+                            className={`flex items-center justify-between p-4 border rounded-2xl transition-all ${expandedAnomaly === i ? 'bg-neon/10 border-neon' : 'bg-charcoal border-border'}`}
+                           >
+                              <div className="space-y-1 text-left">
                                 <span className="text-[9px] font-black text-red-500 uppercase tracking-widest">{exp.point}</span>
                                 <p className="text-[11px] text-white/40 italic truncate max-w-[200px]">{exp.detail}</p>
                               </div>
-                              <div className="text-right">
-                                <span className="text-xs font-black text-white italic">DET_X_{i}</span>
-                              </div>
-                           </div>
+                              <ChevronDown size={14} className={`text-white/20 transition-transform ${expandedAnomaly === i ? 'rotate-180 text-neon' : ''}`} />
+                           </button>
                         ))}
                       </div>
                    </div>
@@ -329,7 +372,7 @@ const ResultsScreen: React.FC<ResultsScreenProps> = ({ result, onReupload, onOpe
                     <Fingerprint size={20} className="text-neon/40" />
                     <div className="overflow-hidden">
                        <span className="text-[8px] font-black text-white/20 uppercase block tracking-widest">Metadata Hash</span>
-                       <p className="text-[10px] font-mono text-white/40 truncate">{result.id} // NODE_{Math.floor(Math.random()*999)}</p>
+                       <p className="text-[10px] font-mono text-white/40 truncate">{result.id} // SEC_NODE_{Math.floor(Math.random()*999)}</p>
                     </div>
                  </div>
               </div>
